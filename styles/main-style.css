@@ -1,0 +1,42 @@
+@font-face {
+    font-family: "Navara";
+    src: url(../fonts/Navara\ Demo-Regular.otf);
+}
+#data-container{
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    font-size: 20pt;
+    font-family: "Navara";
+}
+#data-container #loading{
+    display: none;
+    background: black;
+    -webkit-background-clip: text;
+    -webkit-text-stroke: white 1px;
+    margin: 30px 0 30px 0;
+    font-family: "njnaruto";
+    transform: scale(2);
+    animation: loading 1s ease-in-out infinite alternate;
+}
+.result{
+    width: fit-content;
+    background-color:rgba(255, 255, 255, 0.7);
+    padding: 10px;
+}
+.result img{
+    width: 400px;
+}
+.result ul, .result li{
+    margin: 0;
+    text-indent: 0;
+}
+
+@keyframes loading {
+    from{
+        transform: scale(2);
+    } to {
+        transform: scale(1.7);
+    }
+}
