@@ -14,13 +14,17 @@
         <h1>Dattebayo API</h1>
         <nav>
             <ul>
-                <li onclick="">Character</li>
-                <li onclick="">Clan</li>
-                <li onclick="">Village</li>
+                <li id="characters">Character</li>
+                <li id="clans">Clan</li>
+                <li id="villages">Village</li>
             </ul>
         </nav>
-        <input type="text" id="charactername" placeholder="Character to search">
-        <button id="button" onclick="">Search</button>
+        <p>This API returns detailed character data from Naruto anime and its sequels, you can search characters by name, clan, or village.</p>
+        <input type="text" id="searchInput" placeholder="Search by name">
+        <br>
+        <button id="btnFullSearch">Search full name</button>
+        <button id="btnPartialSearch">Search partial name</button>
+        <button id="clear">Clear</button>
     </header>
 
     <main id="data-container">
