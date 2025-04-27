@@ -12,6 +12,7 @@ export const globalVar = {
 // Inicializar a página
 utils.windowLoad();
 
+// Começar a busca por nome completo
 export const searchFull = async () => {
     const text = document.getElementById("searchInput").value.toLowerCase().trim();
     if (!text) {
@@ -23,6 +24,7 @@ export const searchFull = async () => {
     limitCache(30);
 }
 
+// Começar a busca por nome parcial
 export const searchPartial = async () => {
     const text = document.getElementById("searchInput").value.toLowerCase().trim();
     if (!text) {
@@ -34,9 +36,8 @@ export const searchPartial = async () => {
     limitCache(30);
 }
 
-// Debounce
-
-const debouncedSearchPartial = utils.debounce(searchPartial, 500); // Busca com debounce
+// Função do debounce
+const debouncedSearchPartial = utils.debounce(searchPartial, 500);
 const searchInput = document.getElementById("searchInput");
 
 searchInput.addEventListener("input", () => {
@@ -45,6 +46,7 @@ searchInput.addEventListener("input", () => {
     }
 });
 
+// Função que chama as funções do DOM e paginação
 const handleSearchResults = (data) => {
     if (!data || data.length === 0) {
         alert("No results found.");
@@ -56,6 +58,7 @@ const handleSearchResults = (data) => {
     createPaginationButtons(data, globalVar.itemsPerPage); // Configura a paginação
 };
 
+// Função que cria os botôes da paginação
 const createPaginationButtons = (data, itemsPerPage) => {
     const paginationContainer = document.getElementById("pagination-container");
     paginationContainer.innerHTML = ""; // Limpa os botões antigos
@@ -63,15 +66,22 @@ const createPaginationButtons = (data, itemsPerPage) => {
     const totalPages = Math.ceil(data.length / itemsPerPage); // Calcula o número total de páginas
 
     for (let i = 1; i <= totalPages; i++) {
-        const button = utils.createAndInsertElement("button", i, null, {class: "pagination-button"});
+        const button = utils.createAndInsertElement("button", i, null, {class: "pagination-button"}); // Criando o botão
 
         button.addEventListener("click", () => {
-            globalVar.currentPage = i; // Atualiza a página atual
+            globalVar.currentPage = i;
             displayCharacters(data, globalVar.currentPage, itemsPerPage); // Exibe os personagens da página atual
         });
-
         paginationContainer.appendChild(button);
     }
+    // Função para deixar o botão laranja e maior quando clicado
+    document.querySelectorAll(".pagination-button").forEach(button => {
+        button.addEventListener("click", (event) => {
+            document.querySelectorAll(".pagination-button").forEach(btn => btn.classList.remove("selected"));
+    
+            event.target.classList.add("selected");
+        });
+    });
 };
 
 const displayCharacters = (data, currentPage, itemsPerPage) => {
@@ -81,12 +91,12 @@ const displayCharacters = (data, currentPage, itemsPerPage) => {
     }
     const container = document.getElementById("data-container");
     clearPage();
-        // Calcula os índices dos personagens a serem exibidos
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-    
-        // Obtém os personagens da página atual
-        const charactersToDisplay = data.slice(startIndex, endIndex);
+    // Calcula os índices dos personagens a serem exibidos
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    // Obtém os personagens da página atual
+    const charactersToDisplay = data.slice(startIndex, endIndex);
     
     for (const character of charactersToDisplay) {
         const div = utils.createAndInsertElement("div", null, null, {class: "result"}, null);
@@ -231,17 +241,18 @@ const displayCharacters = (data, currentPage, itemsPerPage) => {
     }
 }
 
-// Função para limpar todos os resultados
+// Função para limpar todos os resultados da página, permanece no cache
 export const clearPage = () => {
     const container = document.getElementById("data-container");
     const results = container.querySelectorAll(".result");
     results.forEach(result => result.remove());
 }
 
+// Função para limitar o cache
 const limitCache = (maxEntries) => {
     const cachedDetails = [];
 
-    // Coleta todos registros detalhados de personagens no cache
+    // Coleta todos registros detalhados de personagens no cache e armaneza em um array
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key.startsWith('character_')) {

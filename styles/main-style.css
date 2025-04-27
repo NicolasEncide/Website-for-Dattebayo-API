@@ -64,6 +64,17 @@
     transform: scale(1.5);
     transition: transform 0.3s ease;
 }
+.pagination-button.selected{
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: none;
+    background-color: orange;
+    color: black;
+    border-radius: 10px;
+    cursor: pointer;
+    transform: scale(1.5);
+    transition: transform 0.3s ease;
+}
 
 @keyframes loading {
     from {

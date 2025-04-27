@@ -1,14 +1,17 @@
 import * as main from "./main.js";
 import * as api from "./api.js";
 
+// Função para normalizar uma string (tornar tudo minúsculo e retirar acentos)
 export const normalizeString = (string) => {
     return string.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
+// Função para capitalizar uma string
 export const capitalize = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+// Função para criar e inserir um elemento HTML em um elemento pai (opcional)
 export const createAndInsertElement = (tag, text = null, HTML = null, attributes = {}, fatherElement = null) => {
     const element = document.createElement(tag);
     if (text && HTML) {
@@ -27,6 +30,7 @@ export const createAndInsertElement = (tag, text = null, HTML = null, attributes
     fatherElement.appendChild(element);
 }
 
+// Função para travar os botôes e inputs e mostrar a div de carregamento
 export const loadingLock = (bool) => {
     document.querySelectorAll("button", "input").forEach(item => {
         item.disabled = bool;
@@ -36,10 +40,11 @@ export const loadingLock = (bool) => {
         document.getElementById("loading").style.display = "block";
         return;
     }
-
     document.getElementById("loading").style.display = "none";
+    
 }
 
+// Função para modificar a opção de busca
 const searchOptionSet = (searchOption) => {
     main.globalVar.searchOption = searchOption;
     if (searchOption === "characters") {
@@ -52,6 +57,7 @@ const searchOptionSet = (searchOption) => {
     console.log(`The current search option is ${main.globalVar.searchOption}`)
 }
 
+// Função para o debounce
 export const debounce = (fn, delay) => {
     let timer;
     return (...args) => {
@@ -60,6 +66,7 @@ export const debounce = (fn, delay) => {
     };
 }
 
+// Função para nicialização da página
 export const windowLoad = () => {
     localStorage.clear();
     loadingLock(true);
@@ -72,7 +79,7 @@ export const windowLoad = () => {
     document.getElementById("clear").onclick = () => main.clearPage();
     document.getElementById("btnFullSearch").onclick = () => main.searchFull();
     document.getElementById("btnPartialSearch").onclick = () => main.searchPartial();
-    const debounceButton = document.getElementById("toggleDebounce");
+    const debounceButton = document.getElementById("toggleDebounce");   // Assim, o debounce pode ser ativado ou desativado através de um botão
     debounceButton.onclick = () => {
         main.globalVar.isDebounceEnabled = !main.globalVar.isDebounceEnabled;
         debounceButton.textContent = main.globalVar.isDebounceEnabled ? "Disable debounce" : "Enable debounce";

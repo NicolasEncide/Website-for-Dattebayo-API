@@ -1,6 +1,7 @@
 import * as utils from "./utils.js";
 import * as main from "./main.js";
 
+// Função de pré-carregamento dos dados pela API
 export const APIPreload = async (searchOption) => {
     try {
         const url = `https://dattebayo-api.onrender.com/${searchOption}?limit=1431`;
@@ -24,6 +25,7 @@ export const APIPreload = async (searchOption) => {
     }
 }
 
+// Função de busca por nome completo, o parâmetro searchOption diz pra função se eu estou buscando personagens pelo nome, clã ou vila
 export const searchCharactersFull = async (searchOption, name) => {
     try {
         utils.loadingLock(true);
@@ -63,12 +65,13 @@ export const searchCharactersFull = async (searchOption, name) => {
     }
 }
 
+// Mesma coisa do anterior, mas para nomes parciais
 export const searchCharactersPartial = async (searchOption, name) => {
     try {
         utils.loadingLock(true);
         if (searchOption === "characters") {
             const characterslist = JSON.parse(localStorage.getItem("characterslist")) || [];
-            const result = characterslist.find(char => char.name.includes(name));
+            const result = characterslist.find(char => char.name.includes(name)); // Verifica se o nome passado está incluído em algum personagem
             if (result) {
                 console.log("Character found.");
                 const details = await fetchAndCacheDetails(result.id);
@@ -102,19 +105,20 @@ export const searchCharactersPartial = async (searchOption, name) => {
     }
 }
 
+// Função única para busca no cache e na API, me retornando o que já está salvo no cache, e caso não esteja já faz a requisição na API.
+const CACHE_EXPIRATION_MS = 5 * 60 * 1000;
 const fetchAndCacheDetails = async (ids) => {
     try {
         let cachedCharactersArray = [];
         let APICharactersArray = [];
-        // Executa se o parâmetro é um array de ids
+        // Executa se o parâmetro é um array de ids, posso buscar vários personagens em apenas uma requisição
         if (Array.isArray(ids)) {
-
             for (let id of ids) {
                 const cachedCharacter = JSON.parse(localStorage.getItem('character_' + id));
-                if (cachedCharacter) {
+                if (cachedCharacter && (Date.now() - cachedCharacter.timestamp < CACHE_EXPIRATION_MS)) {
                     console.log("Character found in cache.");
                     console.log(cachedCharacter);
-                    cachedCharactersArray.push(cachedCharacter);
+                    cachedCharactersArray.push(cachedCharacter.data);
                 } else {
                     console.log("Character not found in cache, I will search in API later.");
                     APICharactersArray.push(id);
@@ -123,9 +127,9 @@ const fetchAndCacheDetails = async (ids) => {
         } else {
             // Se não for um array, e estiver no cache, retorna o personagem
             const cachedCharacter = JSON.parse(localStorage.getItem('character_' + ids));
-            if (cachedCharacter) {
+            if (cachedCharacter && (Date.now() - cachedCharacter.timestamp < CACHE_EXPIRATION_MS)) {
             console.log("Details found in cache.");
-            return Array(cachedCharacter);
+            return [cachedCharacter.data];
             } else {
                 // Se não for um array, e não estiver no cache, será buscado na API
                 console.log("Details not found in cache, I will search in API.")
@@ -142,17 +146,22 @@ const fetchAndCacheDetails = async (ids) => {
             APIResultsArray = Array.isArray(results) ? results : [results];
             if (!APIResultsArray) { throw new Error("The API did not return data.") }
     
-            // Salvar os detalhes no localStorage
+            // Salva os detalhes no localStorage
                 for (let character of APIResultsArray) {
                     console.log('Details found in API:');
                     console.log(character);
                     console.log('Saving in cache.');
-                    localStorage.setItem("character_" + character.id, JSON.stringify(character)); // Salvando no localStorage
+                    localStorage.setItem("character_" + character.id, JSON.stringify({
+                        data: character,
+                        timestamp: Date.now()
+                    }));
+    
                 }
         }
-        return [...cachedCharactersArray, ...APIResultsArray]; // Operador de espalhamento para combinar os dois arrays em um
+        return [...cachedCharactersArray, ...APIResultsArray]; // Operador spread para combinar os dois arrays em um
     } catch (error) {
         alert(error.message);
+        utils.loadingLock(false);
         return null;
     }
 }
