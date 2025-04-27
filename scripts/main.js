@@ -13,7 +13,7 @@ export const globalVar = {
 utils.windowLoad();
 
 export const searchFull = async () => {
-    const text = document.getElementById("searchInput").value;
+    const text = document.getElementById("searchInput").value.toLowerCase().trim();
     if (!text) {
         alert("Please, enter a name.");
         return;
@@ -24,7 +24,7 @@ export const searchFull = async () => {
 }
 
 export const searchPartial = async () => {
-    const text = document.getElementById("searchInput").value;
+    const text = document.getElementById("searchInput").value.toLowerCase().trim();
     if (!text) {
         alert("Please, enter a name.");
         return;
