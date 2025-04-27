@@ -25,6 +25,7 @@ export const APIPreload = async (searchOption) => {
 
 export const searchCharactersFull = async (searchOption, name) => {
     try {
+        utils.loadingLock(true);
         if (searchOption === "characters") {
             const characterslist = JSON.parse(localStorage.getItem("characterslist")) || [];
             const result = characterslist.find(char => char.name === name);
@@ -34,10 +35,12 @@ export const searchCharactersFull = async (searchOption, name) => {
                 if (!details) { return null; }
         
                 console.log("Character details: ", details);
+                utils.loadingLock(false);
                 return details;
             }
             throw new Error("Character not found");
         } else {
+            utils.loadingLock(true);
             const contentlist = JSON.parse(localStorage.getItem(`${searchOption}list`)) || [];
             const result = contentlist.find(item => item.name === name);
             if (result) {
@@ -46,18 +49,21 @@ export const searchCharactersFull = async (searchOption, name) => {
                 if (!details) { return null; }
         
                 console.log("Character details: ", details);
+                utils.loadingLock(false);
                 return details;
             }
             throw new Error("Character not found");
         }
     } catch (error) {
         alert(error.message);
+        utils.loadingLock(false);
         return null;
     }
 }
 
 export const searchCharactersPartial = async (searchOption, name) => {
     try {
+        utils.loadingLock(true);
         if (searchOption === "characters") {
             const characterslist = JSON.parse(localStorage.getItem("characterslist")) || [];
             const result = characterslist.find(char => char.name.includes(name));
@@ -67,10 +73,12 @@ export const searchCharactersPartial = async (searchOption, name) => {
                 if (!details) { return null; }
         
                 console.log("Character details: ", details);
+                utils.loadingLock(false);
                 return details;
             }
             throw new Error("Character not found");
         } else {
+            utils.loadingLock(true);
             const contentlist = JSON.parse(localStorage.getItem(`${searchOption}list`)) || [];
             const result = contentlist.find(item => item.name.includes(name));
             if (result) {
@@ -79,12 +87,14 @@ export const searchCharactersPartial = async (searchOption, name) => {
                 if (!details) { return null; }
         
                 console.log("Character details: ", details);
+                utils.loadingLock(false);
                 return details;
             }
             throw new Error("Character not found");
         }
     } catch (error) {
         alert(error.message);
+        utils.loadingLock(false);
         return null;
     }
 }
@@ -93,7 +103,7 @@ const fetchAndCacheDetails = async (ids) => {
     try {
         let cachedCharactersArray = [];
         let APICharactersArray = [];
-        // Processa se o parâmetro é um array de ids
+        // Executa se o parâmetro é um array de ids
         if (Array.isArray(ids)) {
 
             for (let id of ids) {
@@ -110,7 +120,7 @@ const fetchAndCacheDetails = async (ids) => {
             const cachedCharacter = JSON.parse(localStorage.getItem('character_' + ids));
             if (cachedCharacter) {
             console.log("Details found in cache.");
-            return cachedCharacter;
+            return Array(cachedCharacter);
             } else {
                 // Se não for um array, e não estiver no cache, será buscado na API
                 console.log("Details not found in cache, I will search in API.")
@@ -123,17 +133,17 @@ const fetchAndCacheDetails = async (ids) => {
         if (APICharactersArray.length > 0) {
             const response = await fetch(`https://dattebayo-api.onrender.com/characters/${APICharactersArray.join(",")}?limit=1431`);
             if (!response.ok) { throw new Error("Failed to retrieve data from API.") }
-            APIResultsArray = await response.json();
+            const results  = await response.json();
+            APIResultsArray = Array.isArray(results) ? results : [results];
             if (!APIResultsArray) { throw new Error("The API did not return data.") }
     
             // Salvar os detalhes no localStorage
-            for (let character of APIResultsArray) {
-                console.log('Details found in API:');
-                console.log(character);
-                console.log('Saving in cache.');
-                localStorage.setItem("character_" + character.id, JSON.stringify(character)); // Salvando no localStorage
-            }
-            
+                for (let character of APIResultsArray) {
+                    console.log('Details found in API:');
+                    console.log(character);
+                    console.log('Saving in cache.');
+                    localStorage.setItem("character_" + character.id, JSON.stringify(character)); // Salvando no localStorage
+                }
         }
         return [...cachedCharactersArray, ...APIResultsArray]; // Operador de espalhamento para combinar os dois arrays em um
     } catch (error) {

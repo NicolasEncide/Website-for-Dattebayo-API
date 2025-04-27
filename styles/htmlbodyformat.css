@@ -12,7 +12,7 @@ body{
 }
 header{
     font-family: "njnaruto";
-    font-size: 40pt;
+    font-size: 30pt;
     width: fit-content;
 }
 header h1{
@@ -25,15 +25,15 @@ header h1{
 }
 header p{
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    font-size: 14pt;
-    background-color: rgba(0, 0, 0, 0.6);
+    font-size: 13pt;
+    background-color: rgba(0, 0, 0, 0.8);
     border-radius: 10px;
     color: white;
     padding: 5px;
 }
 header nav ul{
     display: flex;
-    font-size: 25pt;
+    font-size: 20pt;
     gap: 25px;
     list-style-type: none;
     padding: 0;
@@ -53,6 +53,7 @@ header button{
     padding: 10px;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-size: 20pt;
+    margin-top: 10px;
 }
 header nav li:hover, header button:hover{
     transform: scale(1.1);

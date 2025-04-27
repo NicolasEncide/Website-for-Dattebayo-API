@@ -9,16 +9,25 @@ export const capitalize = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-export const createElement = (tag, text, attributes = {}) => {
+export const createAndInsertElement = (tag, text = null, HTML = null, attributes = {}, fatherElement = null) => {
     const element = document.createElement(tag);
-    element.textContent = text;
+    if (text && HTML) {
+        return;
+    } else if (!text && HTML) {
+        element.innerHTML = HTML;
+    } else {
+        element.textContent = text;
+    }
     for (const key in attributes) {
         element.setAttribute(key, attributes[key]);
     }
-    return element;
+    if (!fatherElement) {
+        return element;
+    }
+    fatherElement.appendChild(element);
 }
 
-export const loadingLock = (bool = true) => {
+export const loadingLock = (bool) => {
     document.querySelectorAll("button", "input").forEach(item => {
         item.disabled = bool;
     });
@@ -43,7 +52,7 @@ const searchOptionSet = (searchOption) => {
 
 export const windowLoad = () => {
     localStorage.clear();
-    loadingLock();
+    loadingLock(true);
     api.APIPreload("characters");
     api.APIPreload("clans");
     api.APIPreload("villages");
@@ -54,23 +63,4 @@ export const windowLoad = () => {
     document.getElementById("btnFullSearch").onclick = () => main.searchFull();
     document.getElementById("btnPartialSearch").onclick = () => main.searchPartial();
     loadingLock(false);
-}
-
-export const limitCache = (maxEntries) => {
-    const cachedDetails = [];
-
-    // Coleta todos registros detalhados de personagens no cache
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith('character_')) {
-            cachedDetails.push(key);
-        }
-    }
-
-    // Remove os registros se exceder o limite
-    if (cachedDetails.length > maxEntries) {
-        const keysToRemove = cachedDetails.slice(0, cachedDetails.length - maxEntries);
-        keysToRemove.forEach(key => localStorage.removeItem(key));
-        console.log('Old registers removed:', keysToRemove);
-    }
 }
