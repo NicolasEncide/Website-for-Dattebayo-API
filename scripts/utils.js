@@ -41,13 +41,23 @@ export const loadingLock = (bool) => {
 }
 
 const searchOptionSet = (searchOption) => {
-    main.searchState.searchOption = searchOption;
+    main.globalVar.searchOption = searchOption;
     if (searchOption === "characters") {
         document.getElementById("searchInput").placeholder = "Search by name";
+        alert("You are now searching a character by name.");
     } else {
         document.getElementById("searchInput").placeholder = `Search by ${searchOption.slice(0,-1)}`;
+        alert(`You are now searching a character by ${searchOption.slice(0,-1)}.`);
     }
-    console.log(`The current search option is ${main.searchState.searchOption}`)
+    console.log(`The current search option is ${main.globalVar.searchOption}`)
+}
+
+export const debounce = (fn, delay) => {
+    let timer;
+    return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+    };
 }
 
 export const windowLoad = () => {
@@ -59,8 +69,14 @@ export const windowLoad = () => {
     document.getElementById("characters").onclick = () => searchOptionSet("characters");
     document.getElementById("clans").onclick = () => searchOptionSet("clans")
     document.getElementById("villages").onclick = () => searchOptionSet("villages");
-    document.getElementById("clear").onclick = () => main.clear();
+    document.getElementById("clear").onclick = () => main.clearPage();
     document.getElementById("btnFullSearch").onclick = () => main.searchFull();
     document.getElementById("btnPartialSearch").onclick = () => main.searchPartial();
+    const debounceButton = document.getElementById("toggleDebounce");
+    debounceButton.onclick = () => {
+        main.globalVar.isDebounceEnabled = !main.globalVar.isDebounceEnabled;
+        debounceButton.textContent = main.globalVar.isDebounceEnabled ? "Disable debounce" : "Enable debounce";
+        console.log(`Debounce is now ${main.globalVar.isDebounceEnabled ? "enabled" : "disabled"}`);
+    };
     loadingLock(false);
 }

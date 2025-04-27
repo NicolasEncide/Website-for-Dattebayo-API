@@ -42,6 +42,29 @@
     text-indent: 0;
 }
 
+#pagination-container {
+    text-align: center;
+    padding: 10px;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+}
+.pagination-button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: none;
+    background-color: blue;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transform: scale(1);
+    transition: transform 0.3s ease;
+}
+.pagination-button:hover {
+    transform: scale(1.5);
+    transition: transform 0.3s ease;
+}
+
 @keyframes loading {
     from {
         transform: scale(2);

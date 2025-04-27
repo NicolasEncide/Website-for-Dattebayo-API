@@ -1,4 +1,5 @@
 import * as utils from "./utils.js";
+import * as main from "./main.js";
 
 export const APIPreload = async (searchOption) => {
     try {
@@ -30,7 +31,7 @@ export const searchCharactersFull = async (searchOption, name) => {
             const characterslist = JSON.parse(localStorage.getItem("characterslist")) || [];
             const result = characterslist.find(char => char.name === name);
             if (result) {
-                                console.log(`${searchOption.slice(0,-1)} found.`);
+                console.log(`${searchOption.slice(0,-1)} found.`);
                 const details = await fetchAndCacheDetails(result.id);
                 if (!details) { return null; }
         
@@ -38,9 +39,10 @@ export const searchCharactersFull = async (searchOption, name) => {
                 utils.loadingLock(false);
                 return details;
             }
-            throw new Error("Character not found");
+            throw new Error(`${searchOption.slice(0,-1)} not found.`);
         } else {
             utils.loadingLock(true);
+            main.clearPage();
             const contentlist = JSON.parse(localStorage.getItem(`${searchOption}list`)) || [];
             const result = contentlist.find(item => item.name === name);
             if (result) {
@@ -52,7 +54,7 @@ export const searchCharactersFull = async (searchOption, name) => {
                 utils.loadingLock(false);
                 return details;
             }
-            throw new Error("Character not found");
+            throw new Error(`${searchOption.slice(0,-1)} not found.`);
         }
     } catch (error) {
         alert(error.message);
@@ -76,9 +78,10 @@ export const searchCharactersPartial = async (searchOption, name) => {
                 utils.loadingLock(false);
                 return details;
             }
-            throw new Error("Character not found");
+            throw new Error(`${searchOption.slice(0,-1)} not found.`);
         } else {
             utils.loadingLock(true);
+            main.clearPage();
             const contentlist = JSON.parse(localStorage.getItem(`${searchOption}list`)) || [];
             const result = contentlist.find(item => item.name.includes(name));
             if (result) {
@@ -90,7 +93,7 @@ export const searchCharactersPartial = async (searchOption, name) => {
                 utils.loadingLock(false);
                 return details;
             }
-            throw new Error("Character not found");
+            throw new Error(`${searchOption.slice(0,-1)} not found.`);
         }
     } catch (error) {
         alert(error.message);
@@ -109,6 +112,8 @@ const fetchAndCacheDetails = async (ids) => {
             for (let id of ids) {
                 const cachedCharacter = JSON.parse(localStorage.getItem('character_' + id));
                 if (cachedCharacter) {
+                    console.log("Character found in cache.");
+                    console.log(cachedCharacter);
                     cachedCharactersArray.push(cachedCharacter);
                 } else {
                     console.log("Character not found in cache, I will search in API later.");

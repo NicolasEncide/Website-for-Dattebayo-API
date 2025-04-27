@@ -1,10 +1,15 @@
 import * as utils from "./utils.js";
 import * as api from "./api.js";
 
-export const searchState = {    // Precisa ser um objeto pois vira um atributo read-only quando é exportado, no qual não pode ser modificado
-    searchOption: "characters"
+// Variáveis globais - Precisa ser um objeto pois vira um atributo read-only quando é exportado, no qual não pode ser modificado
+export const globalVar = {
+    searchOption: "characters", // Opção de busca
+    isDebounceEnabled: true, // Flag do debounce
+    itemsPerPage: 4, // Número de personagens por página
+    currentPage: 1 // Página atual
 };
 
+// Inicializar a página
 utils.windowLoad();
 
 export const searchFull = async () => {
@@ -13,9 +18,9 @@ export const searchFull = async () => {
         alert("Please, enter a name.");
         return;
     }
-    const results = await api.searchCharactersFull(searchState.searchOption, text);
-    displayCharacters(results);
-    limitCache(100);
+    const results = await api.searchCharactersFull(globalVar.searchOption, text);
+    handleSearchResults(results);
+    limitCache(30);
 }
 
 export const searchPartial = async () => {
@@ -24,40 +29,66 @@ export const searchPartial = async () => {
         alert("Please, enter a name.");
         return;
     }
-    const results = await api.searchCharactersPartial(searchState.searchOption, text);
-    displayCharacters(results);
-    limitCache(100);
+    const results = await api.searchCharactersPartial(globalVar.searchOption, text);
+    handleSearchResults(results);
+    limitCache(30);
 }
 
-// Função para limpar todos os resultados
-export const clear = () => {
-    const container = document.getElementById("data-container");
-    const results = container.querySelectorAll(".result");
-    results.forEach(result => result.remove());
-}
+// Debounce
 
-const limitCache = (maxEntries) => {
-    const cachedDetails = [];
+const debouncedSearchPartial = utils.debounce(searchPartial, 500); // Busca com debounce
+const searchInput = document.getElementById("searchInput");
 
-    // Coleta todos registros detalhados de personagens no cache
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith('character_')) {
-            cachedDetails.push(key);
-        }
+searchInput.addEventListener("input", () => {
+    if (globalVar.isDebounceEnabled) {
+        debouncedSearchPartial();
+    }
+});
+
+const handleSearchResults = (data) => {
+    if (!data || data.length === 0) {
+        alert("No results found.");
+        return;
     }
 
-    // Remove os registros se exceder o limite
-    if (cachedDetails.length > maxEntries) {
-        const keysToRemove = cachedDetails.slice(0, cachedDetails.length - maxEntries);
-        keysToRemove.forEach(key => localStorage.removeItem(key));
-        console.log(`Old registers removed: ${keysToRemove}`);
-    }
-}
+    globalVar.currentPage = 1; // Redefine para a primeira página
+    displayCharacters(data, globalVar.currentPage, globalVar.itemsPerPage); // Exibe a primeira página
+    createPaginationButtons(data, globalVar.itemsPerPage); // Configura a paginação
+};
 
-const displayCharacters = (data) => {
+const createPaginationButtons = (data, itemsPerPage) => {
+    const paginationContainer = document.getElementById("pagination-container");
+    paginationContainer.innerHTML = ""; // Limpa os botões antigos
+
+    const totalPages = Math.ceil(data.length / itemsPerPage); // Calcula o número total de páginas
+
+    for (let i = 1; i <= totalPages; i++) {
+        const button = utils.createAndInsertElement("button", i, null, {class: "pagination-button"});
+
+        button.addEventListener("click", () => {
+            globalVar.currentPage = i; // Atualiza a página atual
+            displayCharacters(data, globalVar.currentPage, itemsPerPage); // Exibe os personagens da página atual
+        });
+
+        paginationContainer.appendChild(button);
+    }
+};
+
+const displayCharacters = (data, currentPage, itemsPerPage) => {
+    if (!data) {
+        console.log("Character not found.")
+        return;
+    }
     const container = document.getElementById("data-container");
-    for (const character of data) {
+    clearPage();
+        // Calcula os índices dos personagens a serem exibidos
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+    
+        // Obtém os personagens da página atual
+        const charactersToDisplay = data.slice(startIndex, endIndex);
+    
+    for (const character of charactersToDisplay) {
         const div = utils.createAndInsertElement("div", null, null, {class: "result"}, null);
         // Nome
         utils.createAndInsertElement("h3", character.name, null, {}, div);
@@ -199,111 +230,29 @@ const displayCharacters = (data) => {
         container.appendChild(div);
     }
 }
-// const displayCharacters = (data) => {
-//     const container = document.getElementById("data-container");
 
-//     for (const character of data) {
-//         const div = utils.createAndInsertElement("div", null, null, { class: "result" }, container);
+// Função para limpar todos os resultados
+export const clearPage = () => {
+    const container = document.getElementById("data-container");
+    const results = container.querySelectorAll(".result");
+    results.forEach(result => result.remove());
+}
 
-//         utils.createAndInsertElement("h3", character.name, null, {}, div);
+const limitCache = (maxEntries) => {
+    const cachedDetails = [];
 
-//         if (Array.isArray(character.images) && character.images.length > 0) {
-//             for (const image of character.images) {
-//                 utils.createAndInsertElement("img", null, null, { src: image, alt: character.name }, div);
-//             }
-//         } else {
-//             utils.createAndInsertElement("p", "No images Available", null, {}, div);
-//         }
+    // Coleta todos registros detalhados de personagens no cache
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('character_')) {
+            cachedDetails.push(key);
+        }
+    }
 
-//         const primaryUL = utils.createAndInsertElement("ul", null, null, {}, div);
-
-//         utils.createAndInsertElement("li", `Anime debut: ${character.debut?.anime || "None"}`, null, {}, primaryUL);
-
-//         const members = utils.createAndInsertElement("ul", null, null, {}, 
-//             utils.createAndInsertElement("li", "Family:", null, {}, primaryUL));
-
-//         if (character.family) {
-//             for (const member in character.family) {
-//                 utils.createAndInsertElement("li", `${utils.capitalize(member)}: ${character.family[member]}`, null, {}, members);
-//             }
-//         } else {
-//             utils.createAndInsertElement("li", "No Family Members Available", null, {}, members);
-//         }
-
-//         const jutsus = utils.createAndInsertElement("ul", null, null, {}, 
-//             utils.createAndInsertElement("li", "Jutsu:", null, {}, primaryUL));
-
-//         if (Array.isArray(character.jutsu) && character.jutsu.length > 0) {
-//             for (const jutsu of character.jutsu) {
-//                 utils.createAndInsertElement("li", jutsu, null, {}, jutsus);
-//             }
-//         } else {
-//             utils.createAndInsertElement("li", "No Jutsu Available", null, {}, jutsus);
-//         }
-
-//         const natures = utils.createAndInsertElement("ul", null, null, {}, 
-//             utils.createAndInsertElement("li", "Nature Type:", null, {}, primaryUL));
-
-//         if (Array.isArray(character.natureType) && character.natureType.length > 0) {
-//             for (const nature of character.natureType) {
-//                 utils.createAndInsertElement("li", nature, null, {}, natures);
-//             }
-//         } else {
-//             utils.createAndInsertElement("li", "No Nature Types Available", null, {}, natures);
-//         }
-
-//         const personalDetails = utils.createAndInsertElement("ul", null, null, {}, 
-//             utils.createAndInsertElement("li", "Personal:", null, {}, primaryUL));
-
-//         utils.createAndInsertElement("li", `Birthdate: ${character.personal?.birthdate || "None"}`, null, {}, personalDetails);
-//         utils.createAndInsertElement("li", `Sex: ${character.personal?.sex || "None"}`, null, {}, personalDetails);
-
-//         const classifications = utils.createAndInsertElement("ul", null, null, {}, 
-//             utils.createAndInsertElement("li", "Classification:", null, {}, primaryUL));
-
-//         if (Array.isArray(character.personal?.classification) && character.personal.classification.length > 0) {
-//             for (const clas of character.personal.classification) {
-//                 utils.createAndInsertElement("li", clas, null, {}, classifications);
-//             }
-//         } else {
-//             utils.createAndInsertElement("li", "No Classification Available", null, {}, classifications);
-//         }
-
-//         utils.createAndInsertElement("li", `Tailed Beast: ${character.personal?.tailedBeast || "None"}`, null, {}, primaryUL);
-
-//         const occupations = utils.createAndInsertElement("ul", null, null, {}, 
-//             utils.createAndInsertElement("li", "Occupation:", null, {}, primaryUL));
-
-//         if (Array.isArray(character.personal?.occupation) && character.personal.occupation.length > 0) {
-//             for (const ocu of character.personal.occupation) {
-//                 utils.createAndInsertElement("li", ocu, null, {}, occupations);
-//             }
-//         } else {
-//             utils.createAndInsertElement("li", "No Occupations Available", null, {}, occupations);
-//         }
-
-//         const affiliations = utils.createAndInsertElement("ul", null, null, {}, 
-//             utils.createAndInsertElement("li", "Affiliation:", null, {}, primaryUL));
-
-//         if (Array.isArray(character.personal?.affiliation) && character.personal.affiliation.length > 0) {
-//             for (const aff of character.personal.affiliation) {
-//                 utils.createAndInsertElement("li", aff, null, {}, affiliations);
-//             }
-//         } else {
-//             utils.createAndInsertElement("li", "No Affiliations Available", null, {}, affiliations);
-//         }
-
-//         const teams = utils.createAndInsertElement("ul", null, null, {}, 
-//             utils.createAndInsertElement("li", "Teams:", null, {}, primaryUL));
-
-//         if (Array.isArray(character.personal?.team) && character.personal.team.length > 0) {
-//             for (const team of character.personal.team) {
-//                 utils.createAndInsertElement("li", team, null, {}, teams);
-//             }
-//         } else {
-//             utils.createAndInsertElement("li", "No Teams Available", null, {}, teams);
-//         }
-
-//         utils.createAndInsertElement("li", `Clan: ${character.personal?.clan || "None"}`, null, {}, primaryUL);
-//     }
-// };
+    // Remove os registros se exceder o limite
+    if (cachedDetails.length > maxEntries) {
+        const keysToRemove = cachedDetails.slice(0, cachedDetails.length - maxEntries);
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        console.log(`Old registers removed: ${keysToRemove}`);
+    }
+}
