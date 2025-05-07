@@ -50,7 +50,6 @@ searchInput.addEventListener("input", () => {
 // Função que chama as funções do DOM e paginação
 const handleSearchResults = (data) => {
     if (!data || data.length === 0) {
-        alert("No results found.");
         return;
     }
 
