@@ -34,7 +34,7 @@ export const searchCharactersFull = async (searchOption, name) => {
             const result = characterslist.find(char => char.name === name);
             if (result) {
                 console.log(`${searchOption.slice(0,-1)} found.`);
-                const details = await fetchAndCacheDetails(result.id);
+                const details = await fetchAndCacheDetails(result.id); // Função da busca
                 if (!details) { return null; }
         
                 console.log("Character details: ", details);
@@ -115,7 +115,7 @@ const fetchAndCacheDetails = async (ids) => {
         if (Array.isArray(ids)) {
             for (let id of ids) {
                 const cachedCharacter = JSON.parse(localStorage.getItem('character_' + id));
-                if (cachedCharacter && (Date.now() - cachedCharacter.timestamp < CACHE_EXPIRATION_MS)) {
+                if (cachedCharacter && (Date.now() - cachedCharacter.timestamp < CACHE_EXPIRATION_MS)) { // Tempo de validação do cache
                     console.log("Character found in cache.");
                     console.log(cachedCharacter);
                     cachedCharactersArray.push(cachedCharacter.data);

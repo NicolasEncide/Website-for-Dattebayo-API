@@ -28,7 +28,6 @@ export const searchFull = async () => {
 export const searchPartial = async () => {
     const text = document.getElementById("searchInput").value.toLowerCase().trim();
     if (!text) {
-        alert("Please, enter a name.");
         return;
     }
     const results = await api.searchCharactersPartial(globalVar.searchOption, text);
@@ -42,7 +41,9 @@ const searchInput = document.getElementById("searchInput");
 
 searchInput.addEventListener("input", () => {
     if (globalVar.isDebounceEnabled) {
-        debouncedSearchPartial();
+        if (searchInput.value) {
+            debouncedSearchPartial();
+        }
     }
 });
 

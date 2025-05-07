@@ -66,7 +66,7 @@ export const debounce = (fn, delay) => {
     };
 }
 
-// Função para nicialização da página
+// Função para inicialização da página
 export const windowLoad = () => {
     localStorage.clear();
     loadingLock(true);
@@ -74,7 +74,7 @@ export const windowLoad = () => {
     api.APIPreload("clans");
     api.APIPreload("villages");
     document.getElementById("characters").onclick = () => searchOptionSet("characters");
-    document.getElementById("clans").onclick = () => searchOptionSet("clans")
+    document.getElementById("clans").onclick = () => searchOptionSet("clans");
     document.getElementById("villages").onclick = () => searchOptionSet("villages");
     document.getElementById("clear").onclick = () => main.clearPage();
     document.getElementById("btnFullSearch").onclick = () => main.searchFull();
